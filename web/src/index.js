@@ -4,7 +4,7 @@ import './index.css';
 import Generala from './Generala.jsx';
 
 ReactDOM.render(
-  <React.StrictMode>
+<React.StrictMode>
     <Generala/>
   </React.StrictMode>,
   document.getElementById('root')

@@ -1,168 +1,127 @@
 import { React, useState, useEffect, useContext } from 'react'
 import Dice from './Dice'
+import GeneralaSystem from './GeneralaSystem'
 
 export default function Generala() {
-    const[dice, setDice] = useState([0,0,0,0,0])
-    const[points, setPoints] = useState(0)
-    const[turn, setTurn] = useState(0)
-    const[jugadas, setJugadas] = useState([])
-    const[dice2roll, setDice2roll] = useState([])
+    //TODO Lograr hacer andar refactor
+
+    const[dice, setDice]                     = useState([0,0,0,0,0])
+    const[points, setPoints]                 = useState(0)
+    const[turn, setTurn]                     = useState(0)
+    const[jugadas, setJugadas]               = useState([])
+    const[dice2roll, setDice2roll]           = useState([])
+    const[cantidadReroll, setCantidadReroll] = useState(3)
+    const[mostrarError, setMostrarError]     = useState(false)
+    const[mensajeDeError, setMensajeDeError] = useState("")
+
+    useEffect(() => {}, [mostrarError])
+
+    useEffect(() => {rollAllDice()},[])
 
     const getRandomArbitrary = (min,max) => {
         return Math.floor(Math.random() * (max - min) + min);
     }
 
     const rollDice = () => {
-        setDice(prevState => prevState.map((i,index) => (dice2roll.includes(index) ? getRandomArbitrary(1,6) : i)))
-        setDice2roll([])
+        if(cantidadReroll > 0 && dice2roll.length >= 1) {
+            setDice(prevState => prevState.map((i,index) => (dice2roll.includes(index) ? getRandomArbitrary(1,6) : i)))
+            setDice2roll([])
+            setCantidadReroll(prevState => prevState - 1)
+        } else {
+            if(cantidadReroll <= 0) {
+                setMensajeDeError(() => "Ya tiraste 3 veces, no podes volver a tirar!")
+            } else {
+                setMensajeDeError(() => "Debe seleccionar al menos un dado")
+            }
+            setMostrarError(() => true)
+        }
     }
 
     const rollAllDice = () => {
-        setDice2roll(prevState => [...prevState,[0,1,2,3,4]])
-        rollDice()
+        setDice(prevState => prevState.map(() => getRandomArbitrary(1,6)))
     }
-
-    //useEffect(() => {rollAllDice()})
 
     const restart = () => {
         setPoints(0)
         setTurn(0)
         setJugadas([])
+        setCantidadReroll(() => 3)
         rollAllDice()
-    }
-
-    const checkearJuego = () => {
-        var ret = ""
-        if(checkearGenerala()) {
-            ret = "Generala"
-        } else {
-            if(checkearPoker()) {
-                ret = "Poker"
-            } else {
-                if(checkearFull()) {
-                    ret = "Full"
-                } else {
-                    if(checkearEscalera()) {
-                        ret = "Escalera"
-                    } else {
-                        ret = "Dados"
-                    }
-                }
-            }
-        }
-        return ret
-    }
-
-    const juegoAPuntos = juego => {
-        var ret = 0
-        if(juego == "Generala") {
-            ret = 50
-        } else {
-            if(juego == "Poker") {
-                ret = 40
-            } else {
-                if(juego == "Full") {
-                    ret = 30
-                } else {
-                    if(juego == "Escalera") {
-                        ret = 20
-                    } else {
-                        ret = conseguirDadosMasAltos()
-                    }
-                }
-            }
-        }
-        return ret
-    }
-
-    const count = (list,x) => {
-        var count = 0;
-        for(var i = 0; i < list.length; ++i) {
-            if(list[i] == x) {
-                count++;
-            }
-        }
-        return count
-    }
-
-    const max = (list) => {
-        var ret = 0
-        for(var i = 0; i < list.length; ++i) {
-            if(list[i] > ret) {
-                ret = list[i]
-            }
-        }
-        return ret
-    }
-
-    const checkearGenerala = () => {
-        return count(dice, dice[0]) === 5
-    }
-
-    const checkearPoker = () => {
-        return  count(dice, 1) === 4 ||
-                count(dice, 2) === 4 ||
-                count(dice, 3) === 4 ||
-                count(dice, 4) === 4 ||
-                count(dice, 5) === 4 ||
-                count(dice, 6) === 4
-    }
-
-    const checkearFull = () => {
-        return (count(dice, 1) === 3 ||
-                count(dice, 2) === 3 ||
-                count(dice, 3) === 3 ||
-                count(dice, 4) === 3 ||
-                count(dice, 5) === 3 ||
-                count(dice, 6) === 3) &&
-                    (count(dice, 1) === 2 ||
-                    count(dice, 2)  === 2 ||
-                    count(dice, 3)  === 2 ||
-                    count(dice, 4)  === 2 ||
-                    count(dice, 5)  === 2 ||
-                    count(dice, 6)  === 2)
-    }
-
-    const checkearEscalera = () => {
-        return dice.includes(2) && dice.includes(3) && dice.includes(4) && dice.includes(5) &&
-                (dice.includes(1) || dice.includes(6))
-    }
-
-    const conseguirDadosMasAltos = () => {
-        return count(dice, max(dice)) * max(dice)
     }
 
     const endTurn = () => {
         setTurn(prevState => prevState + 1)
-        var juego = checkearJuego()
-        var puntos = juegoAPuntos(juego)
-        setJugadas(prevState => ([...prevState, juego]))
+        var juego = GeneralaSystem().checkearJuego()
+        var puntos = GeneralaSystem().juegoAPuntos(juego)
+        setJugadas(prevState => ([...prevState, juego + ","]))
         setPoints(prevState => prevState + puntos)
+        setCantidadReroll(() => 3)
         rollAllDice()
     }
 
     const add2roll = id => {
-        setDice2roll(prevState => (prevState.includes(id)) ? [...prevState] : [...prevState, id])
+        setDice2roll(prevState => (prevState.includes(id)) ? [...prevState].filter(item => item !== id) : [...prevState, id])
     }
 
     return (
         <>
-            <div>
+            { 
+                //TODO consultar como mostrar mensaje de error correctamente
+                mostrarError && ( 
+                    <div className="alert alert-warning" role="alert">
+                        {mensajeDeError}
+                        <button type="button" className="btn-close" data-bs-dismiss="alert" aria-label="Close" onClick={setMostrarError(() => false)}/>
+                    </div>)
+            }
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossOrigin="anonymous"></script>
+        <div className="Background">
                 <div>
-                    <p>Turno: {turn}</p>
-                    <p>Puntos: {points}</p>
-                    <p>Jugadas: {toString(jugadas)}</p>
+                    <div className="Buttons">
+                        <button type="button" className="btn btn-danger" onClick={restart}>Partida Nueva</button>
+                    </div>
+                    <p className="Text">Turno: {turn}</p>
+                    <p className="Text">Puntos: {points}</p>
+                    <p className="Text">Tiradas: {cantidadReroll}</p>
+                    <p className="Text">Jugadas: {jugadas}</p>
                 </div>
-                <div>
-                    <button onClick={() => add2roll(0)}><Dice value={dice[0]}/></button>
-                    <button onClick={() => add2roll(1)}><Dice value={dice[1]}/></button>
-                    <button onClick={() => add2roll(2)}><Dice value={dice[2]}/></button>
-                    <button onClick={() => add2roll(3)}><Dice value={dice[3]}/></button>
-                    <button onClick={() => add2roll(4)}><Dice value={dice[4]}/></button>
+                <div className="DiceHolder">
+                    <span className="Dice">
+                        <button type="button" className="btn btn-light position-relative" onClick={() => add2roll(0)}>
+                            <Dice value={dice[0]}/>
+                            <span className={dice2roll.includes(0) ? "position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-succes rounded-circle" : "visually-hidden"}/>
+                        </button>
+                    </span>
+                    <span className="Dice">
+                        <button type="button" className="btn btn-light position-relative" onClick={() => add2roll(1)}>
+                            <Dice value={dice[1]}/>
+                            <span className={dice2roll.includes(1) ? "position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-succes rounded-circle" : "visually-hidden"}/>
+                        </button>
+                    </span>
+                    <span className="Dice">
+                        <button type="button" className="btn btn-light position-relative" onClick={() => add2roll(2)}>
+                            <Dice value={dice[2]}/>
+                            <span className={dice2roll.includes(2) ? "position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-succes rounded-circle" : "visually-hidden"}/>
+                        </button>
+                    </span>
+                    <span className="Dice">
+                        <button type="button" className="btn btn-light position-relative" onClick={() => add2roll(3)}>
+                            <Dice value={dice[3]}/>
+                            <span className={dice2roll.includes(3) ? "position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-succes rounded-circle" : "visually-hidden"}/>
+                        </button>
+                    </span>
+                    <span className="Dice">
+                        <button type="button" className="btn btn-light position-relative" onClick={() => add2roll(4)}>
+                            <Dice value={dice[4]}/>
+                            <span className={dice2roll.includes(4) ? "position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-succes rounded-circle" : "visually-hidden"}/>
+                        </button>
+                    </span>
                 </div>
-                <button onClick={rollDice}>Volver a tirar</button>
-                <button onClick={endTurn}>Quedarse</button>
-                <button onClick={restart}>Partida Nueva</button>
+                <span className="Buttons">
+                    <button type="button" className="btn btn-warning" onClick={rollDice}>Volver a tirar</button>
+                </span>
+                <span className="Buttons">
+                    <button type="button" className="btn btn-success" onClick={endTurn}>Quedarse</button>
+                </span>
             </div>
         </>
     )

@@ -1,0 +1,32 @@
+.Background {
+    background-color: #2b74d4;
+    height: 100%;
+    width: 100%;
+    text-align: center;
+    align-content: center;
+}
+
+.Dice {
+    margin-left: 15px;
+}
+
+.DiceHolder {
+    margin-bottom: 20px;
+}
+
+.Buttons {
+    margin-top: 10px;
+    margin: 50px;
+    text-align: center;
+}
+
+.TextHolder {
+    align-content: center;
+}
+
+.Text {
+    width: 100px;
+    background-color: #8206a0;
+    margin-top: 20px;
+    align-self: center;
+}
