@@ -10,11 +10,8 @@ export const checkearJuego = (dices, jugadas) => {
         ret = "Full";
     else if(checkearEscalera(dices) && !jugadas.includes("Escalera")) 
         ret = "Escalera";
-    else if(!jugadas.includes("Numero " + max(dices)))
-        ret = "Numero " + max(dices);
     else
-        ret = "Jugada Repetida"
-    
+        ret = "Numero ";
     return ret;
 }
 
@@ -25,9 +22,13 @@ export const juegoAPuntos = (juego, dices) => {
         "Poker":    40,
         "Full":     30,
         "Escalera": 20,
-        "default":  conseguirDadosMasAltos(dices)
     };
     return points[juego];
+}
+
+//public
+export const numeroAPuntos = (n, dices) => {
+    return conseguirDados(n, dices)
 }
 
 //private
@@ -39,17 +40,6 @@ const count = (list,x) => {
         }
     }
     return count;
-}
-
-//private
-const max = (list) => {
-    var ret = 0;
-    for(var i = 0; i < list.length; ++i) {
-        if(list[i] > ret) {
-            ret = list[i];
-        }
-    }
-    return ret;
 }
 
 //private
@@ -90,6 +80,6 @@ const checkearEscalera = dices => {
 }
 
 //private
-const conseguirDadosMasAltos = dices => {
-    return count(dices, max(dices)) * max(dices);
+const conseguirDados = (n, dices) => {
+    return count(dices, n) * n;
 }

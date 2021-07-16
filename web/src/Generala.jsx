@@ -1,24 +1,22 @@
 import { React, useState, useEffect } from 'react'
-import { Simulate } from 'react-dom/test-utils'
 import Dice from './Dice'
-import {checkearJuego, juegoAPuntos} from './GeneralaSystem.js'
+import {checkearJuego, juegoAPuntos, numeroAPuntos} from './GeneralaSystem.js'
 
 export default function Generala() {
     //TODO Lograr hacer andar refactor
 
-    const[dices, setDice]                    = useState([0,0,0,0,0])
-    const[points, setPoints]                 = useState(0)
-    const[turn, setTurn]                     = useState(0)
-    const[jugadas, setJugadas]               = useState([])
-    const[dice2roll, setDice2roll]           = useState([])
-    const[cantidadReroll, setCantidadReroll] = useState(3)
-    const[mostrarError, setMostrarError]     = useState(false)
-    const[mensajeDeError, setMensajeDeError] = useState("")
+    const[dices, setDice]                      = useState([0,0,0,0,0])
+    const[points, setPoints]                   = useState(0)
+    const[turn, setTurn]                       = useState(0)
+    const[jugadas, setJugadas]                 = useState([])
+    const[dice2roll, setDice2roll]             = useState([])
+    const[cantidadReroll, setCantidadReroll]   = useState(3)
+    const[mostrarError, setMostrarError]       = useState(false)
+    const[mensajeDeError, setMensajeDeError]   = useState("")
+    const[debeElegirCategoria, setDebeElegirCategoria] = useState(false)
 
 
-    useEffect(() => {
-        rollAllDice()
-    },[])
+    useEffect(() => { rollAllDice() }, [])
 
     const getRandomArbitrary = (min,max) => {
         return Math.floor(Math.random() * (max - min) + min);
@@ -51,17 +49,61 @@ export default function Generala() {
         rollAllDice()
     }
 
-    const endTurn = () => {
-        setTurn(prevState => prevState + 1)
+    const usoTodosLosNumeros = () => {
+        return  jugadas.includes("Numero 1") &&
+                jugadas.includes("Numero 2") &&
+                jugadas.includes("Numero 3") &&
+                jugadas.includes("Numero 4") &&
+                jugadas.includes("Numero 5") &&
+                jugadas.includes("Numero 6")
+    }
+
+    const quedarse = () => {
         var juego = checkearJuego(dices, jugadas)
-        var puntos = juegoAPuntos(juego, dices)
-        if(juego !== "Jugada Repetida") {
-            setJugadas(prevState => (prevState.length === 0 ? [juego] : [...prevState, ", " + juego]))
+        if(usoTodosLosNumeros()) {
+            console.log("tacho")
+            if(!jugadas.includes("Generala"))
+                setJugadas(prevState => (prevState.length === 0 ? ["Generala"] : [...prevState, ", ", "Generala"]))
+            else if(!jugadas.includes("Poker"))
+                setJugadas(prevState => (prevState.length === 0 ? ["Poker"] : [...prevState, ", ", "Poker"]))
+            else if(!jugadas.includes("Full"))
+                setJugadas(prevState => (prevState.length === 0 ? ["Full"] : [...prevState, ", ", "Full"]))
+            else if(!jugadas.includes("Escalera"))
+                setJugadas(prevState => (prevState.length === 0 ? ["Escalera"] : [...prevState, ", ", "Escalera"]))
+            else
+                setMensajeDeError("Ya no quedan jugadas que marcar, el juego finalizó")
+                setMostrarError(true)
+            if(!mostrarError) {
+                setTurn(prevState => prevState + 1)
+                rollAllDice()
+            }  
+        } else {
+            (juego !== ("Numero ")) ? endTurn(juego) : setDebeElegirCategoria(true)
+        }
+    }
+
+    const elegirCategoria = n => {
+        var juego = checkearJuego(dices, jugadas)
+        if(!jugadas.includes(juego + n)) {
+            var puntos = numeroAPuntos(n, dices)
+            setJugadas(prevState => (prevState.length === 0 ? [juego + n] : [...prevState, ", ", juego + n]))
             setPoints(prevState => prevState + puntos)
+            setTurn(prevState => prevState + 1)
+            setCantidadReroll(() => 3)
+            rollAllDice()
+            setDebeElegirCategoria(false)
         } else {
             setMensajeDeError("no podes marcar dos veces la misma jugada")
             setMostrarError(true)
         }
+    }
+
+    const endTurn = (juego) => {
+        console.log("turno terminado")
+        var puntos = juegoAPuntos(juego, dices)
+        setJugadas(prevState => (prevState.length === 0 ? [juego] : [...prevState, ", ", juego]))
+        setPoints(prevState => prevState + puntos)
+        setTurn(prevState => prevState + 1)
         setCantidadReroll(() => 3)
         rollAllDice()
     }
@@ -119,7 +161,23 @@ export default function Generala() {
                     <button type="button" className="btn btn-warning" onClick={rollDice}>Volver a tirar</button>
                 </span>
                 <span className="Buttons">
-                    <button type="button" className="btn btn-success" onClick={endTurn}>Quedarse</button>
+                    {
+                        debeElegirCategoria ?
+                        <span className="dropdown">
+                            <button className="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                Elegir categoria de numero a usar
+                            </button>
+                            <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                <li><button className="dropdown-item" onClick={() => elegirCategoria(1)}>Elegir 1</button></li>
+                                <li><button className="dropdown-item" onClick={() => elegirCategoria(2)}>Elegir 2</button></li>
+                                <li><button className="dropdown-item" onClick={() => elegirCategoria(3)}>Elegir 3</button></li>
+                                <li><button className="dropdown-item" onClick={() => elegirCategoria(4)}>Elegir 4</button></li>
+                                <li><button className="dropdown-item" onClick={() => elegirCategoria(5)}>Elegir 5</button></li>
+                                <li><button className="dropdown-item" onClick={() => elegirCategoria(6)}>Elegir 6</button></li>
+                            </ul>
+                        </span> :
+                        <button type="button" className="btn btn-success" onClick={quedarse}>Quedarse</button>
+                    }
                 </span>
                 <div>
                     {
@@ -132,6 +190,7 @@ export default function Generala() {
                     }
                 </div>
             </div>
+            <button onClick={() => console.log(usoTodosLosNumeros())}> print usoTodosLosNumeros </button>
         </>
     )
 }
