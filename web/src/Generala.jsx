@@ -1,11 +1,12 @@
-import { React, useState, useEffect, useContext } from 'react'
+import { React, useState, useEffect } from 'react'
+import { Simulate } from 'react-dom/test-utils'
 import Dice from './Dice'
-import GeneralaSystem from './GeneralaSystem'
+import {checkearJuego, juegoAPuntos} from './GeneralaSystem.js'
 
 export default function Generala() {
     //TODO Lograr hacer andar refactor
 
-    const[dice, setDice]                     = useState([0,0,0,0,0])
+    const[dices, setDice]                    = useState([0,0,0,0,0])
     const[points, setPoints]                 = useState(0)
     const[turn, setTurn]                     = useState(0)
     const[jugadas, setJugadas]               = useState([])
@@ -14,9 +15,10 @@ export default function Generala() {
     const[mostrarError, setMostrarError]     = useState(false)
     const[mensajeDeError, setMensajeDeError] = useState("")
 
-    useEffect(() => {}, [mostrarError])
 
-    useEffect(() => {rollAllDice()},[])
+    useEffect(() => {
+        rollAllDice()
+    },[])
 
     const getRandomArbitrary = (min,max) => {
         return Math.floor(Math.random() * (max - min) + min);
@@ -33,7 +35,7 @@ export default function Generala() {
             } else {
                 setMensajeDeError(() => "Debe seleccionar al menos un dado")
             }
-            setMostrarError(() => true)
+            setMostrarError(true)
         }
     }
 
@@ -51,10 +53,15 @@ export default function Generala() {
 
     const endTurn = () => {
         setTurn(prevState => prevState + 1)
-        var juego = GeneralaSystem().checkearJuego()
-        var puntos = GeneralaSystem().juegoAPuntos(juego)
-        setJugadas(prevState => ([...prevState, juego + ","]))
-        setPoints(prevState => prevState + puntos)
+        var juego = checkearJuego(dices, jugadas)
+        var puntos = juegoAPuntos(juego, dices)
+        if(juego !== "Jugada Repetida") {
+            setJugadas(prevState => (prevState.length === 0 ? [juego] : [...prevState, ", " + juego]))
+            setPoints(prevState => prevState + puntos)
+        } else {
+            setMensajeDeError("no podes marcar dos veces la misma jugada")
+            setMostrarError(true)
+        }
         setCantidadReroll(() => 3)
         rollAllDice()
     }
@@ -65,14 +72,6 @@ export default function Generala() {
 
     return (
         <>
-            { 
-                //TODO consultar como mostrar mensaje de error correctamente
-                mostrarError && ( 
-                    <div className="alert alert-warning" role="alert">
-                        {mensajeDeError}
-                        <button type="button" className="btn-close" data-bs-dismiss="alert" aria-label="Close" onClick={setMostrarError(() => false)}/>
-                    </div>)
-            }
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossOrigin="anonymous"></script>
         <div className="Background">
                 <div>
@@ -87,31 +86,31 @@ export default function Generala() {
                 <div className="DiceHolder">
                     <span className="Dice">
                         <button type="button" className="btn btn-light position-relative" onClick={() => add2roll(0)}>
-                            <Dice value={dice[0]}/>
+                            <Dice value={dices[0]}/>
                             <span className={dice2roll.includes(0) ? "position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-succes rounded-circle" : "visually-hidden"}/>
                         </button>
                     </span>
                     <span className="Dice">
                         <button type="button" className="btn btn-light position-relative" onClick={() => add2roll(1)}>
-                            <Dice value={dice[1]}/>
+                            <Dice value={dices[1]}/>
                             <span className={dice2roll.includes(1) ? "position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-succes rounded-circle" : "visually-hidden"}/>
                         </button>
                     </span>
                     <span className="Dice">
                         <button type="button" className="btn btn-light position-relative" onClick={() => add2roll(2)}>
-                            <Dice value={dice[2]}/>
+                            <Dice value={dices[2]}/>
                             <span className={dice2roll.includes(2) ? "position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-succes rounded-circle" : "visually-hidden"}/>
                         </button>
                     </span>
                     <span className="Dice">
                         <button type="button" className="btn btn-light position-relative" onClick={() => add2roll(3)}>
-                            <Dice value={dice[3]}/>
+                            <Dice value={dices[3]}/>
                             <span className={dice2roll.includes(3) ? "position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-succes rounded-circle" : "visually-hidden"}/>
                         </button>
                     </span>
                     <span className="Dice">
                         <button type="button" className="btn btn-light position-relative" onClick={() => add2roll(4)}>
-                            <Dice value={dice[4]}/>
+                            <Dice value={dices[4]}/>
                             <span className={dice2roll.includes(4) ? "position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-succes rounded-circle" : "visually-hidden"}/>
                         </button>
                     </span>
@@ -122,6 +121,16 @@ export default function Generala() {
                 <span className="Buttons">
                     <button type="button" className="btn btn-success" onClick={endTurn}>Quedarse</button>
                 </span>
+                <div>
+                    {
+                        mostrarError ?
+                        <div className="alert alert-warning" role="alert">
+                            {mensajeDeError}
+                            <button type="button" className="btn-close" aria-label="Close" onClick={() => setMostrarError(false)}/>
+                        </div> :
+                        <div/>                    
+                    }
+                </div>
             </div>
         </>
     )

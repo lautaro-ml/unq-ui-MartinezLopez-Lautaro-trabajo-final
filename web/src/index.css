@@ -25,7 +25,7 @@
 }
 
 .Text {
-    width: 100px;
+    width: fit-content;
     background-color: #8206a0;
     margin-top: 20px;
     align-self: center;
