@@ -1,6 +1,7 @@
 # unq-ui-MartinezLopez-Lautaro-trabajo-final
 trabajo final de interfaces
 
+--------------------------------------------------------------------------------------------------------------------------
 
 Instrucciones de descarga:
 
@@ -10,8 +11,10 @@ Vera que un menu se a desplegado, hacer click en el boton Download as ZIP
 
 Descomprimir el .ZIP descargado en la carpeta que más le convenga
 
+-------------------------------------------------------------------------------------------------------------------------
 
 Instrucciones de ejecución:
+
 Necesitaran npm para poder correr este proyecto
 
 Logrará abrirla poniendo "cmd" en el buscador de archivos y programas y precionando "Enter"
